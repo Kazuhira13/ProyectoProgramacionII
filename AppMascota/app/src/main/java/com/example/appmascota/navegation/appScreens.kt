@@ -6,6 +6,8 @@ sealed class AppScreens(val route: String){
     object SplashScreen:AppScreens(route = "slashanimation")
     object LoginScreen:AppScreens(route = "login")
     object RegisterScreen:AppScreens(route = "register")
-    object AdditionalDataScreen:AppScreens(route = "dataAditional")
-    object HomeScreen:AppScreens(route = "Home")
+    object ProfileScreen:AppScreens(route = "perfil")
+    object ProfileViewScreen:AppScreens(route = "vista")
+    object EditProfileScreen :AppScreens(route = "edicion")
+    object  HomeScreen : AppScreens(route = "home_screen")
 }
