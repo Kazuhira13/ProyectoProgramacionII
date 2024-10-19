@@ -80,6 +80,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-auth:23.0.0")
     implementation("com.google.firebase:firebase-firestore:25.1.0")
+    implementation("com.google.firebase:firebase-storage:21.0.1")
 
 
 

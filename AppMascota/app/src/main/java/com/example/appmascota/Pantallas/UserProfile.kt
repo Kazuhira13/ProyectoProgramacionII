@@ -3,10 +3,10 @@ package com.example.appmascota.Pantallas
 import android.net.Uri
 
 data class UserProfile(
-    val PetName: String = "",
-    val PetAge: String = "",
-    val PetBreed: String = "",
-    val PetGender: String = "",
+    val petName: String = "",
+    val petAge: String = "",
+    val petBreed: String = "",
+    val petGender: String = "",
     val firstName: String = "",
     val lastName: String = "",
     val email: String = "",

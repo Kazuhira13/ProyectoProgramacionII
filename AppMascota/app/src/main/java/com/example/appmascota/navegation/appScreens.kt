@@ -7,7 +7,8 @@ sealed class AppScreens(val route: String){
     object LoginScreen:AppScreens(route = "login")
     object RegisterScreen:AppScreens(route = "register")
     object ProfileScreen:AppScreens(route = "perfil")
-    object ProfileViewScreen:AppScreens(route = "vista")
-    object EditProfileScreen :AppScreens(route = "edicion")
-    object  HomeScreen : AppScreens(route = "home_screen")
+    object HomeScreen : AppScreens(route = "home_screen")
+    object UserProfileScreen : AppScreens(route = "VsitaPerfil")
+    object UpdateProfileScreen : AppScreens(route = "ActualizacionPerfil")
+    object ForgotPasswordScreen:AppScreens(route = "contrasseña")
 }

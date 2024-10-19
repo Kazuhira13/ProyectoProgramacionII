@@ -60,7 +60,7 @@ fun ProfileScreen(onNavigateToHome: () -> Unit)
 
     val context = LocalContext.current
 
-    // Lógica para seleccionar la imagen
+
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
         imageUri = uri
     }
@@ -69,10 +69,12 @@ fun ProfileScreen(onNavigateToHome: () -> Unit)
             if (userProfile != null) {
                 firstName = userProfile.firstName
                 lastName = userProfile.lastName
-                PetName = userProfile.PetName
-                PetAge = userProfile.PetAge
-                PetBreed = userProfile.PetBreed
-                PetGender = userProfile.PetGender
+                PetName = userProfile.petName
+                PetAge = userProfile.petAge
+                PetBreed = userProfile.petBreed
+                PetGender = userProfile.petGender
+                imageUri = Uri.parse("https://www.example.com/tu-imagen-de-prueba.jpg")
+                Log.d("UserProfileScreen", "URI de imagen de perfil: $imageUri")
             } else {
                 Log.d("ProfileScreen", "UserProfile es nulo")
             }
@@ -90,7 +92,6 @@ fun ProfileScreen(onNavigateToHome: () -> Unit)
             contentScale = ContentScale.Crop
         )
 
-        // Contenido encima del fondo
         Column(
             modifier = Modifier
                 .padding(16.dp)
@@ -111,7 +112,7 @@ fun ProfileScreen(onNavigateToHome: () -> Unit)
                 )
             } ?: run {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_stat_name), // Imagen por defecto
+                    painter = painterResource(id = R.drawable.ic_stat_name),
                     contentDescription = null,
                     modifier = Modifier
                         .size(150.dp)
@@ -123,7 +124,7 @@ fun ProfileScreen(onNavigateToHome: () -> Unit)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campos de texto para la información del perfil
+
             TextField(
                 value = PetName,
                 onValueChange = { PetName = it },
@@ -167,16 +168,22 @@ fun ProfileScreen(onNavigateToHome: () -> Unit)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón para guardar
             Button(onClick = {
-                saveProfileData(firstName, lastName, email, PetName, PetAge, PetBreed, PetGender) {
+                saveProfileData(firstName, lastName, email, PetName, PetAge, PetBreed, PetGender, null) {
                     val uriToUpload = imageUri
                     if (uriToUpload != null) {
-                        uploadImageToFirebase(uriToUpload) {
-                            Toast.makeText(context, "Datos guardados correctamente", Toast.LENGTH_SHORT).show()
-                            Log.d("ProfileScreen", "Navegando a HomeScreen")
-                            onNavigateToHome()
+                        uploadImageToFirebase(uriToUpload) { downloadUrl ->
+                            if (downloadUrl.isNotEmpty()) {
+                                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@uploadImageToFirebase
+                                updateProfilePicUriInFirestore(userId, downloadUrl) {
+                                    Toast.makeText(context, "Datos guardados correctamente", Toast.LENGTH_SHORT).show()
+                                    Log.d("ProfileScreen", "Navegando a HomeScreen")
+                                    onNavigateToHome()
+                                }
+                            } else {
 
+                                Toast.makeText(context, "Error al guardar la imagen", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     } else {
                         Toast.makeText(context, "Datos guardados correctamente", Toast.LENGTH_SHORT).show()
@@ -199,10 +206,11 @@ fun saveProfileData(
     PetAge: String,
     PetBreed: String,
     PetGender: String,
-    onComplete: () -> Unit
+    profilePicUri: String?,
+    onComplete:   () -> Unit
 ) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "default_user_id"
-    val userProfile = UserProfile(PetName, PetAge, PetBreed, PetGender, firstName, lastName, email)
+    val userProfile = UserProfile(PetName, PetAge, PetBreed, PetGender, firstName, lastName, email, profilePicUri)
 
     Firebase.firestore.collection("users").document(userId).set(userProfile)
         .addOnSuccessListener {
@@ -215,22 +223,51 @@ fun saveProfileData(
         }
 }
 
-private fun uploadImageToFirebase(imageUri: Uri, onComplete: () -> Unit) {
+
+private fun uploadImageToFirebase(imageUri: Uri, onComplete: (String) -> Unit) {
     val storage = Firebase.storage
     val storageRef = storage.reference
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "default_user_id"
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
     val profilePicRef = storageRef.child("profile_pics/$userId.jpg")
 
+    // Subir archivo a Firebase Storage
     profilePicRef.putFile(imageUri)
         .addOnSuccessListener {
             Log.d("Firebase", "Imagen subida exitosamente")
-            onComplete()
+
+            profilePicRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                // Este es el enlace de descarga que debes guardar en Firestore
+                val downloadUrl = downloadUri.toString()
+                Log.d("Firebase", "URL de descarga de imagen: $downloadUrl")
+
+
+                onComplete(downloadUrl)
+            }
         }
         .addOnFailureListener { exception ->
             Log.e("Firebase", "Error al subir la imagen: ${exception.message}")
+            onComplete("")
+        }
+}
+
+
+private fun updateProfilePicUriInFirestore(userId: String, profilePicUri: String, onComplete: () -> Unit) {
+    val userProfileUpdates = hashMapOf<String, Any>(
+        "profilePicUri" to profilePicUri
+    )
+
+    Firebase.firestore.collection("users").document(userId).update(userProfileUpdates)
+        .addOnSuccessListener {
+            Log.d("Firebase", "URI de imagen actualizada en Firestore")
+            onComplete()
+        }
+        .addOnFailureListener { exception ->
+            Log.e("Firebase", "Error al actualizar URI en Firestore: ${exception.message}")
             onComplete()
         }
 }
+
+
 
 fun loadProfileData(onComplete: (UserProfile?) -> Unit) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return

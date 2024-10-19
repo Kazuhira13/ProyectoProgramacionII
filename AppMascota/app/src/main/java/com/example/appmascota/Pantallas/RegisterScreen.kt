@@ -44,9 +44,9 @@ fun RegisterScreen(onRegister: (String, String, String, String) -> Unit, onNavig
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp), //para los bordes
-            verticalArrangement = Arrangement.Center, // vertical
-            horizontalAlignment = Alignment.CenterHorizontally // contenido horizontal
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = "Registro", style = MaterialTheme.typography.headlineMedium)
 
@@ -111,9 +111,9 @@ fun registerUser(
     FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@addOnCompleteListener
                 Log.d("RegisterUser", "Usuario registrado: $firstName $lastName $email")
-                val userProfile = UserProfile(PetName = "", PetAge = "", PetBreed = "", PetGender = "", firstName = firstName, lastName = lastName, email = email)
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@addOnCompleteListener
+                val userProfile = UserProfile(petName = "", petAge = "", petBreed = "", petGender = "", firstName = firstName, lastName = lastName, email = email)
 
                 Firebase.firestore.collection("users").document(userId).set(userProfile)
                     .addOnSuccessListener {
