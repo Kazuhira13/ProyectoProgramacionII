@@ -104,6 +104,16 @@ fun UserProfileScreen(onNavigateToUpdate: () -> Unit,navController: NavControlle
                         )
                     }
                 )
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.lostpets),
+                            contentDescription = null
+                        )
+                    }
+                )
             }
         }
     ){

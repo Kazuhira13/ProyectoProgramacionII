@@ -122,6 +122,16 @@ fun HomeScreen(navController: NavController) {
                         )
                     }
                 )
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.lostpets),
+                            contentDescription = null
+                        )
+                    }
+                )
             }
         }
     ) {
