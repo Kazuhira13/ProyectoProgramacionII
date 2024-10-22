@@ -10,8 +10,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,6 +41,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.appmascota.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 
@@ -47,22 +50,19 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val email = currentUser?.email ?: ""
 
-
     var firstName by rememberSaveable { mutableStateOf("") }
     var lastName by rememberSaveable { mutableStateOf("") }
     var petName by rememberSaveable { mutableStateOf("") }
     var petAge by rememberSaveable { mutableStateOf("") }
     var petBreed by rememberSaveable { mutableStateOf("") }
     var petGender by rememberSaveable { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val context = LocalContext.current
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         imageUri = uri
     }
-
 
     LaunchedEffect(email) {
         loadUserData { profile ->
@@ -77,7 +77,6 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
             }
         }
     }
-
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -102,7 +101,6 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
             TextField(value = petGender, onValueChange = { petGender = it }, label = { Text("Sexo de mascota") })
 
             Spacer(modifier = Modifier.height(16.dp))
-
 
             imageUri?.let {
                 Image(
@@ -129,7 +127,7 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = {
-                saveProfileData(
+                updateProfileData(
                     firstName = firstName,
                     lastName = lastName,
                     email = email,
@@ -137,8 +135,6 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
                     petAge = petAge,
                     petBreed = petBreed,
                     petGender = petGender,
-                    profilePicUri = imageUri,
-                    currentImageUri = imageUri?.toString() ?: "",
                     onSuccess = {
                         Toast.makeText(context, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show()
                         onNavigateBack()
@@ -148,21 +144,41 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
                     }
                 )
             }) {
-                Text("Guardar cambios")
+                Text("Guardar datos del perfil")
             }
-
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
 
-            Button(onClick = { launcher.launch("image/*") }) {
-                Text("Seleccionar nueva foto")
+                Button(onClick = { launcher.launch("image/*") }) {
+                    Text("Seleccionar nueva foto")
+                }
+
+
+                Button(onClick = {
+                    saveProfileImage(
+                        profilePicUri = imageUri,
+                        onSuccess = {
+                            Toast.makeText(context, "Imagen actualizada correctamente", Toast.LENGTH_SHORT).show()
+                            onNavigateBack()
+                        },
+                        onError = { errorMessage ->
+                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                },) {
+                    Text("Guardar imagen")
+                }
             }
         }
     }
 }
 
-fun saveProfileData(
+fun updateProfileData(
     firstName: String,
     lastName: String,
     email: String,
@@ -170,69 +186,83 @@ fun saveProfileData(
     petAge: String,
     petBreed: String,
     petGender: String,
-    profilePicUri: Uri?,
-    currentImageUri: String, // Parámetro actual de la imagen
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-    if (profilePicUri != null && profilePicUri.toString() != currentImageUri) {
-        // Solo intenta subir la imagen si es diferente de la actual
+
+    val userDocRef = Firebase.firestore.collection("users").document(userId)
+    userDocRef.get()
+        .addOnSuccessListener { document ->
+            if (document.exists()) {
+                // Mantener la imagen existente si no se ha cambiado
+                val profilePicUri = document.getString("profilePicUri") ?: ""
+
+                // Crear el nuevo perfil con los datos actualizados, pero manteniendo la imagen
+                val updatedProfile = UserProfile(
+                    firstName = firstName,
+                    lastName = lastName,
+                    email = email,
+                    petName = petName,
+                    petAge = petAge,
+                    petBreed = petBreed,
+                    petGender = petGender,
+                    profilePicUri = profilePicUri
+                )
+
+                // Guardar el perfil actualizado
+                userDocRef.set(updatedProfile)
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+                    .addOnFailureListener { exception ->
+                        onError("Error actualizando perfil: ${exception.message}")
+                    }
+            } else {
+                onError("No se encontró el perfil del usuario.")
+            }
+        }
+        .addOnFailureListener { exception ->
+            onError("Error obteniendo el perfil: ${exception.message}")
+        }
+}
+
+
+fun saveProfileImage(
+    profilePicUri: Uri?,
+    onSuccess: () -> Unit,
+    onError: (String) -> Unit
+) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+    if (profilePicUri != null) {
         val storageRef = Firebase.storage.reference.child("profile_pics/$userId.jpg")
 
         storageRef.putFile(profilePicUri)
             .addOnSuccessListener {
+                Log.d("ProfileUpdate", "Imagen subida con éxito.")
                 storageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
 
-                    val userProfile = UserProfile(
-                        firstName = firstName,
-                        lastName = lastName,
-                        email = email,
-                        petName = petName,
-                        petAge = petAge,
-                        petBreed = petBreed,
-                        petGender = petGender,
-                        profilePicUri = downloadUrl.toString()
-                    )
-
                     Firebase.firestore.collection("users").document(userId)
-                        .set(userProfile)
+                        .update("profilePicUri", downloadUrl.toString())
                         .addOnSuccessListener {
                             onSuccess()
                         }
                         .addOnFailureListener { exception ->
-                            onError("Error actualizando perfil: ${exception.message}")
+                            Log.e("ProfileUpdate", "Error actualizando URL de imagen: ${exception.message}")
+                            onError("Error actualizando URL de imagen: ${exception.message}")
                         }
                 }.addOnFailureListener { exception ->
+                    Log.e("ProfileUpdate", "Error obteniendo URL de la imagen: ${exception.message}")
                     onError("Error obteniendo URL de la imagen: ${exception.message}")
                 }
             }
             .addOnFailureListener { exception ->
+                Log.e("ProfileUpdate", "Error subiendo imagen: ${exception.message}")
                 onError("Error subiendo imagen: ${exception.message}")
             }
     } else {
-        // La imagen no ha cambiado, así que solo actualiza los otros datos
-        val userProfile = UserProfile(
-            firstName = firstName,
-            lastName = lastName,
-            email = email,
-            petName = petName,
-            petAge = petAge,
-            petBreed = petBreed,
-            petGender = petGender,
-            profilePicUri = currentImageUri // Mantiene la imagen actual
-        )
-
-        Firebase.firestore.collection("users").document(userId)
-            .set(userProfile)
-            .addOnSuccessListener {
-                onSuccess()
-            }
-            .addOnFailureListener { exception ->
-                onError("Error actualizando perfil: ${exception.message}")
-            }
+        onError("No se seleccionó ninguna imagen nueva.")
     }
 }
-
-
