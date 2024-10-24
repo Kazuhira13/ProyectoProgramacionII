@@ -38,3 +38,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import androidx.compose.foundation.layout.size
 import coil.compose.rememberImagePainter
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun MenuInicial(navController: NavController) {
+    var showDialog by remember { mutableStateOf(false) }
+    var petName by remember { mutableStateOf("") }
+    var medicalHistory by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val adoptionPosts = remember { mutableStateListOf<Map<String, Any>>() }
+    val context = LocalContext.current
