@@ -454,32 +454,33 @@ fun ratePublication(publicationId: String, isLike: Boolean) {
 
 fun saveReview(publicationId: String, reviewText: String) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-    val userName = FirebaseAuth.getInstance().currentUser?.email // Obtiene el nombre de usuario
 
     if (userId.isNotEmpty() && publicationId.isNotEmpty() && reviewText.isNotEmpty()) {
-        val review = hashMapOf(
-            "publicationId" to publicationId,
-            "userId" to userId,
-            "userName" to userName,
-            "reviewText" to reviewText,
-            "timestamp" to FieldValue.serverTimestamp()
-        )
+        getUserData(userId) { firstName, lastName ->
+            val review = hashMapOf(
+                "publicationId" to publicationId,
+                "userId" to userId,
+                "userName" to "$firstName $lastName", // Guarda el nombre y apellido juntos
+                "reviewText" to reviewText,
+                "timestamp" to FieldValue.serverTimestamp()
+            )
 
-        val db = FirebaseFirestore.getInstance()
-        db.collection("Reseñas").add(review)
-            .addOnSuccessListener {
-                Log.d("Firestore", "Reseña guardada con éxito")
-            }
-            .addOnFailureListener { e ->
-                Log.w("Firestore", "Error al guardar la reseña", e)
-            }
+            val db = FirebaseFirestore.getInstance()
+            db.collection("Reseñas").add(review)
+                .addOnSuccessListener {
+                    Log.d("Firestore", "Reseña guardada con éxito")
+                }
+                .addOnFailureListener { e ->
+                    Log.w("Firestore", "Error al guardar la reseña", e)
+                }
+        }
     } else {
         Log.w("Firestore", "Los campos no pueden estar vacíos")
     }
 }
 
-fun loadReviewsForPublication(publicationId: String,reviews: MutableList<Map<String, Any>>) {
 
+fun loadReviewsForPublication(publicationId: String, reviews: MutableList<Map<String, Any>>) {
     val db = FirebaseFirestore.getInstance()
     // Limpiar la lista de reseñas antes de cargar nuevas reseñas
     reviews.clear()
@@ -502,5 +503,6 @@ fun loadReviewsForPublication(publicationId: String,reviews: MutableList<Map<Str
             Log.w("Firestore", "Error al cargar las reseñas", e)
         }
 }
+
 
 
