@@ -109,11 +109,12 @@ fun UserProfileScreen(onNavigateToUpdate: () -> Unit,navController: NavControlle
                     onClick = {},
                     icon = {
                         Icon(
-                            painter = painterResource(id = R.drawable.lostpets),
+                            painter = painterResource(id = R.drawable.heart),
                             contentDescription = null
                         )
                     }
                 )
+
             }
         }
     ){

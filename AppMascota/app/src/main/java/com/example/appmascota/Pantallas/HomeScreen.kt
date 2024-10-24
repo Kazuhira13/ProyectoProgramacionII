@@ -127,11 +127,12 @@ fun HomeScreen(navController: NavController) {
                     onClick = {},
                     icon = {
                         Icon(
-                            painter = painterResource(id = R.drawable.lostpets),
+                            painter = painterResource(id = R.drawable.heart),
                             contentDescription = null
                         )
                     }
                 )
+
             }
         }
     ) {
