@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,13 +21,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -130,15 +123,29 @@ fun MenuInicial(navController: NavController) {
                                     style = MaterialTheme.typography.bodyMedium
                                 )
 
-                                // Botón de eliminar publicación
-                                Button(
-                                    onClick = {
-                                        // Aquí llamamos a la función para eliminar la publicación
-                                        deleteAdoptionPost(post["id"] as String)
-                                    },
-                                    modifier = Modifier.padding(top = 8.dp)
-                                ) {
-                                    Text("Eliminar")
+                                // Solo muestra el botón de eliminar si el usuario es el creador de la publicación
+                                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                                if (currentUserId == post["userId"]) {
+                                    Button(
+                                        onClick = {
+                                            // Aquí llamamos a la función para eliminar la publicación
+                                            deleteAdoptionPost(post["id"] as String)
+                                        },
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    ) {
+                                        Text("Eliminar")
+                                    }
+                                } else {
+                                    // Este botón aparece solo para los usuarios que no son el creador de la publicación
+                                    Button(
+                                        onClick = {
+                                            // Aquí llamas a la función para mandar la solicitud de adopción
+                                            sendAdoptionRequest(post["id"] as String)
+                                        },
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    ) {
+                                        Text("Mandar Solicitud")
+                                    }
                                 }
                             }
                         }
@@ -256,50 +263,47 @@ fun deleteAdoptionPost(postId: String) {
         }
 }
 
-fun uploadImageToFirebaseStorage(imageUri: Uri?, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
-    if (imageUri == null) return
+fun sendAdoptionRequest(postId: String) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId != null) {
+        val request = hashMapOf(
+            "postId" to postId,
+            "userId" to userId,
+            "timestamp" to FieldValue.serverTimestamp()
+        )
 
-    val storageRef = FirebaseStorage.getInstance().reference
-    val imageRef = storageRef.child("images/${System.currentTimeMillis()}.jpg") // Cambia la extensión según el tipo de imagen
-
-    imageRef.putFile(imageUri)
-        .addOnSuccessListener {
-            imageRef.downloadUrl.addOnSuccessListener { uri ->
-                onSuccess(uri.toString()) // Retorna la URL de la imagen
-            }.addOnFailureListener { e ->
-                onFailure(e)
+        FirebaseFirestore.getInstance().collection("adoptionRequests")
+            .add(request)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Solicitud de adopción enviada con éxito")
             }
-        }
-        .addOnFailureListener { e ->
-            onFailure(e)
-        }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error al enviar la solicitud de adopción", e)
+            }
+    }
 }
 
 fun saveAdoptionPostToFirestore(petName: String, medicalHistory: String, description: String, imageUri: Uri?) {
+    val db = FirebaseFirestore.getInstance()
     val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-    if (userId != null && imageUri != null) {
-        // Subir la imagen y obtener la URL
-        uploadImageToFirebaseStorage(imageUri, { imageUrl ->
-            val adoptionPost = hashMapOf(
-                "userId" to userId,
-                "petName" to petName,
-                "medicalHistory" to medicalHistory,
-                "description" to description,
-                "imageUri" to imageUrl, // Guardar la URL de la imagen
-                "timestamp" to FieldValue.serverTimestamp()
-            )
+    if (userId != null) {
+        val post = hashMapOf(
+            "petName" to petName,
+            "medicalHistory" to medicalHistory,
+            "description" to description,
+            "userId" to userId,
+            "timestamp" to FieldValue.serverTimestamp(),
+            "imageUri" to imageUri.toString() // Guarda la URI de la imagen
+        )
 
-            val db = FirebaseFirestore.getInstance()
-            db.collection("publicationsAdopcion").add(adoptionPost)
-                .addOnSuccessListener {
-                    Log.d("Firestore", "Publicación de adopción guardada con éxito")
-                }
-                .addOnFailureListener { e ->
-                    Log.w("Firestore", "Error al guardar la publicación de adopción", e)
-                }
-        }, { e ->
-            Log.w("Firebase", "Error al subir la imagen", e)
-        })
+        db.collection("publicationsAdopcion")
+            .add(post)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Publicación de adopción guardada con éxito")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error al guardar la publicación de adopción", e)
+            }
     }
 }
