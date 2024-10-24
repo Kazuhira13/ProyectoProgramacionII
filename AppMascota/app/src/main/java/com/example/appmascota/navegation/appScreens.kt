@@ -12,4 +12,6 @@ sealed class AppScreens(val route: String){
     object UpdateProfileScreen : AppScreens(route = "ActualizacionPerfil")
     object ForgotPasswordScreen:AppScreens(route = "contrasseña")
     object MenuInicial:AppScreens(route = "menuInicial")
+    object SolicitudesScreen : AppScreens("solicitudes")
+
 }

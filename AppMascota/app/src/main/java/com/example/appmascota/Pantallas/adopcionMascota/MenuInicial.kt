@@ -74,7 +74,7 @@ fun MenuInicial(navController: NavController) {
                 // Botón "Solicitudes"
                 NavigationBarItem(
                     selected = false,
-                    onClick = { /* Acción para ver las solicitudes */ },
+                    onClick = { navController.navigate("solicitudes") },
                     label = { Text("Solicitudes") },
                     icon = {} // No se muestra ningún ícono
                 )
@@ -103,34 +103,43 @@ fun MenuInicial(navController: NavController) {
                             .padding(16.dp)
                             .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
                     ) {
-                        Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically // Centra verticalmente la imagen y el texto
+                        ) {
                             Image(
                                 painter = rememberImagePainter(post["imageUri"] as String),
                                 contentDescription = null,
-                                modifier = Modifier.size(100.dp)
-                            )
-                            Text(
-                                text = "Nombre: ${post["petName"] as String}",
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            Text(
-                                text = "Historial Médico: ${post["medicalHistory"] as String}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = "Descripción: ${post["description"] as String}",
-                                style = MaterialTheme.typography.bodyMedium
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .padding(end = 16.dp) // Espacio entre la imagen y el texto
                             )
 
-                            // Botón de eliminar publicación
-                            Button(
-                                onClick = {
-                                    // Aquí llamamos a la función para eliminar la publicación
-                                    deleteAdoptionPost(post["id"] as String)
-                                },
-                                modifier = Modifier.padding(top = 8.dp)
-                            ) {
-                                Text("Eliminar")
+                            // Columna que contiene la información de la mascota
+                            Column {
+                                Text(
+                                    text = "Nombre: ${post["petName"] as String}",
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                                Text(
+                                    text = "Historial Médico: ${post["medicalHistory"] as String}",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = "Descripción: ${post["description"] as String}",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+
+                                // Botón de eliminar publicación
+                                Button(
+                                    onClick = {
+                                        // Aquí llamamos a la función para eliminar la publicación
+                                        deleteAdoptionPost(post["id"] as String)
+                                    },
+                                    modifier = Modifier.padding(top = 8.dp)
+                                ) {
+                                    Text("Eliminar")
+                                }
                             }
                         }
                     }
