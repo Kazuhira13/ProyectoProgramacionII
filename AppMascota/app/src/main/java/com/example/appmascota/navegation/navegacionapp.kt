@@ -15,6 +15,7 @@ import com.example.appmascota.Pantallas.HomeScreen
 import com.example.appmascota.Pantallas.LoginScreen
 import com.example.appmascota.Pantallas.ProfileScreen
 import com.example.appmascota.Pantallas.RegisterScreen
+import com.example.appmascota.Pantallas.Servicios.ServiciosParaMascotas
 import com.example.appmascota.Pantallas.SplashScreen
 import com.example.appmascota.Pantallas.UpdateProfileScreen
 import com.example.appmascota.Pantallas.UserProfileScreen
@@ -132,6 +133,10 @@ fun AppNavigation() {
         }
         composable(AppScreens.SolicitudesScreen.route) {
             SolicitudesScreen(navController = navController)
+        }
+
+        composable(AppScreens.ServiciosParaMascotas.route) {
+            ServiciosParaMascotas(navController = navController)
         }
     }
 }

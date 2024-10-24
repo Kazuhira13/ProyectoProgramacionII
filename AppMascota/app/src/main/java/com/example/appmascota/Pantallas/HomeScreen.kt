@@ -113,7 +113,7 @@ fun HomeScreen(navController: NavController) {
                 )
                 NavigationBarItem(
                     selected = true,
-                    onClick = {/* Acción al hacer clic */},
+                    onClick = {navController.navigate(AppScreens.ServiciosParaMascotas.route)},
                     icon = {
                         Icon(
                             //servicios
