@@ -129,4 +129,67 @@ fun MenuInicial(navController: NavController) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
+            // Botón para agregar una nueva publicación de adopción
+            Button(
+                onClick = { showDialog = true },
+                modifier = Modifier
+                    .padding(bottom = 80.dp, end = 24.dp)
+                    .align(Alignment.BottomEnd)
+            ) {
+                Text(text = "Nueva Publicación")
+            }
+
+            // Diálogo para crear una nueva publicación de adopción
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Ofrecer Mascota en Adopción") },
+                    text = {
+                        Column {
+                            TextField(
+                                value = petName,
+                                onValueChange = { petName = it },
+                                label = { Text("Nombre de la Mascota") }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextField(
+                                value = medicalHistory,
+                                onValueChange = { medicalHistory = it },
+                                label = { Text("Historial Médico") }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextField(
+                                value = description,
+                                onValueChange = { description = it },
+                                label = { Text("Descripción") }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            if (petName.isNotBlank() && medicalHistory.isNotBlank() && description.isNotBlank()) {
+                                saveAdoptionPostToFirestore(petName, medicalHistory, description, imageUri)
+                                petName = ""
+                                medicalHistory = ""
+                                description = ""
+                                imageUri = null
+                                showDialog = false
+                            } else {
+                                Toast.makeText(context, "Por favor, rellena todos los campos.", Toast.LENGTH_SHORT).show()
+                            }
+                        }) {
+                            Text("Publicar")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showDialog = false }) {
+                            Text("Cancelar")
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
 
