@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,8 +39,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import androidx.compose.foundation.layout.size
+import com.google.firebase.storage.FirebaseStorage
 import coil.compose.rememberImagePainter
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MenuInicial(navController: NavController) {
@@ -48,6 +52,7 @@ fun MenuInicial(navController: NavController) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val adoptionPosts = remember { mutableStateListOf<Map<String, Any>>() }
     val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         FirebaseFirestore.getInstance().collection("publicationsAdopcion")
             .orderBy("timestamp", Query.Direction.DESCENDING)
@@ -62,6 +67,7 @@ fun MenuInicial(navController: NavController) {
                 adoptionPosts.addAll(newAdoptionPosts)
             }
     }
+
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -72,6 +78,7 @@ fun MenuInicial(navController: NavController) {
                     label = { Text("Solicitudes") },
                     icon = {} // No se muestra ningún ícono
                 )
+
                 // Botón "Mis Solicitudes"
                 NavigationBarItem(
                     selected = false,
@@ -114,6 +121,7 @@ fun MenuInicial(navController: NavController) {
                                 text = "Descripción: ${post["description"] as String}",
                                 style = MaterialTheme.typography.bodyMedium
                             )
+
                             // Botón de eliminar publicación
                             Button(
                                 onClick = {
@@ -129,6 +137,7 @@ fun MenuInicial(navController: NavController) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
+
             // Botón para agregar una nueva publicación de adopción
             Button(
                 onClick = { showDialog = true },
@@ -164,11 +173,29 @@ fun MenuInicial(navController: NavController) {
                                 label = { Text("Descripción") }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
+
+                            // Selector de imagen
+                            SelectImage { uri ->
+                                imageUri = uri // Actualiza la URI de la imagen seleccionada
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Previsualización de la imagen seleccionada
+                            imageUri?.let {
+                                Image(
+                                    painter = rememberImagePainter(it),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .padding(top = 8.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     },
                     confirmButton = {
                         Button(onClick = {
-                            if (petName.isNotBlank() && medicalHistory.isNotBlank() && description.isNotBlank()) {
+                            if (petName.isNotBlank() && medicalHistory.isNotBlank() && description.isNotBlank() && imageUri != null) {
                                 saveAdoptionPostToFirestore(petName, medicalHistory, description, imageUri)
                                 petName = ""
                                 medicalHistory = ""
@@ -192,6 +219,22 @@ fun MenuInicial(navController: NavController) {
         }
     }
 }
+
+@Composable
+fun SelectImage(onImageSelected: (Uri?) -> Unit) {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            onImageSelected(uri)
+        }
+    )
+
+    Button(onClick = { launcher.launch("image/*") }) {
+        Text("Seleccionar Imagen")
+    }
+}
+
 fun deleteAdoptionPost(postId: String) {
     val db = FirebaseFirestore.getInstance()
     db.collection("publicationsAdopcion").document(postId)
@@ -204,29 +247,50 @@ fun deleteAdoptionPost(postId: String) {
         }
 }
 
+fun uploadImageToFirebaseStorage(imageUri: Uri?, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
+    if (imageUri == null) return
+
+    val storageRef = FirebaseStorage.getInstance().reference
+    val imageRef = storageRef.child("images/${System.currentTimeMillis()}.jpg") // Cambia la extensión según el tipo de imagen
+
+    imageRef.putFile(imageUri)
+        .addOnSuccessListener {
+            imageRef.downloadUrl.addOnSuccessListener { uri ->
+                onSuccess(uri.toString()) // Retorna la URL de la imagen
+            }.addOnFailureListener { e ->
+                onFailure(e)
+            }
+        }
+        .addOnFailureListener { e ->
+            onFailure(e)
+        }
+}
+
 fun saveAdoptionPostToFirestore(petName: String, medicalHistory: String, description: String, imageUri: Uri?) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-    if (userId != null) {
-        val adoptionPost = hashMapOf(
-            "userId" to userId,
-            "petName" to petName,
-            "medicalHistory" to medicalHistory,
-            "description" to description,
-            "imageUri" to imageUri.toString(),
-            "timestamp" to FieldValue.serverTimestamp()
-        )
+    if (userId != null && imageUri != null) {
+        // Subir la imagen y obtener la URL
+        uploadImageToFirebaseStorage(imageUri, { imageUrl ->
+            val adoptionPost = hashMapOf(
+                "userId" to userId,
+                "petName" to petName,
+                "medicalHistory" to medicalHistory,
+                "description" to description,
+                "imageUri" to imageUrl, // Guardar la URL de la imagen
+                "timestamp" to FieldValue.serverTimestamp()
+            )
 
-        val db = FirebaseFirestore.getInstance()
-        db.collection("publicationsAdopcion").add(adoptionPost)
-            .addOnSuccessListener {
-                Log.d("Firestore", "Publicación de adopción guardada con éxito")
-            }
-            .addOnFailureListener { e ->
-                Log.w("Firestore", "Error al guardar la publicación de adopción", e)
-            }
-    } else {
-        Log.w("Firestore", "User ID is null. Cannot save adoption post.")
+            val db = FirebaseFirestore.getInstance()
+            db.collection("publicationsAdopcion").add(adoptionPost)
+                .addOnSuccessListener {
+                    Log.d("Firestore", "Publicación de adopción guardada con éxito")
+                }
+                .addOnFailureListener { e ->
+                    Log.w("Firestore", "Error al guardar la publicación de adopción", e)
+                }
+        }, { e ->
+            Log.w("Firebase", "Error al subir la imagen", e)
+        })
     }
 }
-
