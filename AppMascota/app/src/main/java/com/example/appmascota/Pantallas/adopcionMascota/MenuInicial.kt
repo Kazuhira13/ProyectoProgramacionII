@@ -48,3 +48,17 @@ fun MenuInicial(navController: NavController) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val adoptionPosts = remember { mutableStateListOf<Map<String, Any>>() }
     val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        FirebaseFirestore.getInstance().collection("publicationsAdopcion")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null || snapshot == null) return@addSnapshotListener
+                val newAdoptionPosts = snapshot.documents.mapNotNull { doc ->
+                    val data = doc.data?.toMutableMap()
+                    data?.put("id", doc.id) // Guardar el ID del documento
+                    data
+                }
+                adoptionPosts.clear()
+                adoptionPosts.addAll(newAdoptionPosts)
+            }
+    }
