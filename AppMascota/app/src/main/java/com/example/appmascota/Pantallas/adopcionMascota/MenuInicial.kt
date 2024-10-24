@@ -62,3 +62,71 @@ fun MenuInicial(navController: NavController) {
                 adoptionPosts.addAll(newAdoptionPosts)
             }
     }
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                // Botón "Solicitudes"
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { /* Acción para ver las solicitudes */ },
+                    label = { Text("Solicitudes") },
+                    icon = {} // No se muestra ningún ícono
+                )
+                // Botón "Mis Solicitudes"
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { /* Acción para ver mis solicitudes */ },
+                    label = { Text("Mis Solicitudes") },
+                    icon = {} // No se muestra ningún ícono
+                )
+            }
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 50.dp)
+            ) {
+                items(adoptionPosts) { post ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                            .padding(16.dp)
+                            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
+                    ) {
+                        Column {
+                            Image(
+                                painter = rememberImagePainter(post["imageUri"] as String),
+                                contentDescription = null,
+                                modifier = Modifier.size(100.dp)
+                            )
+                            Text(
+                                text = "Nombre: ${post["petName"] as String}",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            Text(
+                                text = "Historial Médico: ${post["medicalHistory"] as String}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "Descripción: ${post["description"] as String}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            // Botón de eliminar publicación
+                            Button(
+                                onClick = {
+                                    // Aquí llamamos a la función para eliminar la publicación
+                                    deleteAdoptionPost(post["id"] as String)
+                                },
+                                modifier = Modifier.padding(top = 8.dp)
+                            ) {
+                                Text("Eliminar")
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+
