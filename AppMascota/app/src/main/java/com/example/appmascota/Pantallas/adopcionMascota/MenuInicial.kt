@@ -34,6 +34,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import coil.compose.rememberImagePainter
+import com.example.appmascota.navegation.AppScreens
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -78,6 +79,12 @@ fun MenuInicial(navController: NavController) {
                     onClick = { /* Acción para ver mis solicitudes */ },
                     label = { Text("Mis Solicitudes") },
                     icon = {} // No se muestra ningún ícono
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = {navController.navigate(AppScreens.HomeScreen.route)},
+                    label = { Text("Regresar a Home") },
+                    icon = {}
                 )
             }
         }

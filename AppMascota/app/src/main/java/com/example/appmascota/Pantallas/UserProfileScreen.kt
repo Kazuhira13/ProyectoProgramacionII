@@ -84,7 +84,7 @@ fun UserProfileScreen(onNavigateToUpdate: () -> Unit,navController: NavControlle
                 )
                 NavigationBarItem(
                     selected = true,
-                    onClick = {/* Acción al hacer clic */},
+                    onClick = {navController.navigate(AppScreens.MenuInicial.route)},
                     icon = {
                         Icon(
                             //adopcion
@@ -95,7 +95,7 @@ fun UserProfileScreen(onNavigateToUpdate: () -> Unit,navController: NavControlle
                 )
                 NavigationBarItem(
                     selected = true,
-                    onClick = {/* Acción al hacer clic */},
+                    onClick = {navController.navigate(AppScreens.ServiciosParaMascotas.route)},
                     icon = {
                         Icon(
                             //servicios
