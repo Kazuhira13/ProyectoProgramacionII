@@ -192,4 +192,41 @@ fun MenuInicial(navController: NavController) {
         }
     }
 }
+fun deleteAdoptionPost(postId: String) {
+    val db = FirebaseFirestore.getInstance()
+    db.collection("publicationsAdopcion").document(postId)
+        .delete()
+        .addOnSuccessListener {
+            Log.d("Firestore", "Publicación de adopción eliminada con éxito")
+        }
+        .addOnFailureListener { e ->
+            Log.w("Firestore", "Error al eliminar la publicación de adopción", e)
+        }
+}
+
+fun saveAdoptionPostToFirestore(petName: String, medicalHistory: String, description: String, imageUri: Uri?) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+    if (userId != null) {
+        val adoptionPost = hashMapOf(
+            "userId" to userId,
+            "petName" to petName,
+            "medicalHistory" to medicalHistory,
+            "description" to description,
+            "imageUri" to imageUri.toString(),
+            "timestamp" to FieldValue.serverTimestamp()
+        )
+
+        val db = FirebaseFirestore.getInstance()
+        db.collection("publicationsAdopcion").add(adoptionPost)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Publicación de adopción guardada con éxito")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error al guardar la publicación de adopción", e)
+            }
+    } else {
+        Log.w("Firestore", "User ID is null. Cannot save adoption post.")
+    }
+}
 
