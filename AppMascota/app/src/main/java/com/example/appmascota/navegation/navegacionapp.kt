@@ -18,6 +18,7 @@ import com.example.appmascota.Pantallas.RegisterScreen
 import com.example.appmascota.Pantallas.SplashScreen
 import com.example.appmascota.Pantallas.UpdateProfileScreen
 import com.example.appmascota.Pantallas.UserProfileScreen
+import com.example.appmascota.Pantallas.adopcionMascota.MenuInicial
 import com.example.appmascota.Pantallas.registerUser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -124,6 +125,9 @@ fun AppNavigation() {
                 },
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+        composable(AppScreens.MenuInicial.route){
+            MenuInicial(navController = navController)
         }
     }
 }
