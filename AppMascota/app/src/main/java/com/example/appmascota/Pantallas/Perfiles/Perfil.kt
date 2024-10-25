@@ -1,4 +1,4 @@
-package com.example.appmascota.Pantallas
+package com.example.appmascota.Pantallas.Perfiles
 
 import android.net.Uri
 import android.util.Log
@@ -35,10 +35,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.appmascota.R
-import com.example.appmascota.navegation.AppScreens
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore

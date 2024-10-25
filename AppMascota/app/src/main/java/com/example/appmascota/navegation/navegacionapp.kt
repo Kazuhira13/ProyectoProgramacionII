@@ -2,10 +2,6 @@ package com.example.appmascota.navegation
 
 import android.widget.Toast
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,19 +9,18 @@ import androidx.navigation.compose.rememberNavController
 import com.example.appmascota.Pantallas.Auntetificacion.ForgotPasswordScreen
 import com.example.appmascota.Pantallas.HomeScreen
 import com.example.appmascota.Pantallas.LoginScreen
-import com.example.appmascota.Pantallas.ProfileScreen
+import com.example.appmascota.Pantallas.Perfiles.ProfileScreen
 import com.example.appmascota.Pantallas.RegisterScreen
 import com.example.appmascota.Pantallas.Servicios.ServiciosParaMascotas
 import com.example.appmascota.Pantallas.SplashScreen
-import com.example.appmascota.Pantallas.UpdateProfileScreen
-import com.example.appmascota.Pantallas.UserProfileScreen
+import com.example.appmascota.Pantallas.Perfiles.UpdateProfileScreen
+import com.example.appmascota.Pantallas.Perfiles.UserProfileScreen
 import com.example.appmascota.Pantallas.adopcionMascota.MenuInicial
 import com.example.appmascota.Pantallas.adopcionMascota.SolicitudesScreen
 import com.example.appmascota.Pantallas.registerUser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.PhoneAuthProvider
 
 @Composable
 fun AppNavigation() {

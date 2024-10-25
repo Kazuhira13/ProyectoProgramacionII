@@ -1,6 +1,4 @@
-package com.example.appmascota.Pantallas
-
-import android.net.Uri
+package com.example.appmascota.Pantallas.Perfiles
 
 data class UserProfile(
     val petName: String = "",

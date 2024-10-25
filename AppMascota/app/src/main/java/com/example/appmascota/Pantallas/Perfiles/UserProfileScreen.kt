@@ -1,4 +1,4 @@
-package com.example.appmascota.Pantallas
+package com.example.appmascota.Pantallas.Perfiles
 
 import android.annotation.SuppressLint
 import android.net.Uri
@@ -41,6 +41,9 @@ import com.example.appmascota.navegation.AppScreens
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -51,6 +54,7 @@ fun UserProfileScreen(onNavigateToUpdate: () -> Unit,navController: NavControlle
 
     var userProfile by remember { mutableStateOf<UserProfile?>(null) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
 
     LaunchedEffect(email) {
         loadUserData { profile ->
@@ -172,6 +176,12 @@ fun UserProfileScreen(onNavigateToUpdate: () -> Unit,navController: NavControlle
                         onNavigateToUpdate()
                     }) {
                         Text("Actualizar datos")
+                    }
+                    Button(onClick = {
+                        Toast.makeText(context, "Se salió de la cuenta", Toast.LENGTH_SHORT).show()
+                        navController.navigate(AppScreens.LoginScreen.route)
+                    }) {
+                        Text("Salir")
                     }
 
 

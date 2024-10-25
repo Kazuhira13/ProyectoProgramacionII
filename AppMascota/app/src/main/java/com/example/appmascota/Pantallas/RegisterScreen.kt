@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.appmascota.Pantallas.Perfiles.UserProfile
 import com.example.appmascota.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
