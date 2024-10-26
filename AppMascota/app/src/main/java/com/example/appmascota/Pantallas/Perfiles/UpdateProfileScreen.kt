@@ -79,26 +79,14 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
         Image(
             painter = painterResource(id = R.drawable.mascota),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
-        Column(
             modifier = Modifier
-                .padding(16.dp)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
+            contentScale = ContentScale.Crop,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
-            TextField(value = firstName, onValueChange = { firstName = it }, label = { Text("Nombre") })
-            TextField(value = lastName, onValueChange = { lastName = it }, label = { Text("Apellido") })
-            TextField(value = petName, onValueChange = { petName = it }, label = { Text("Nombre de mascota") })
-            TextField(value = petAge, onValueChange = { petAge = it }, label = { Text("Edad de mascota") })
-            TextField(value = petBreed, onValueChange = { petBreed = it }, label = { Text("Raza de mascota") })
-            TextField(value = petGender, onValueChange = { petGender = it }, label = { Text("Sexo de mascota") })
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             imageUri?.let {
                 Image(
                     painter = rememberAsyncImagePainter(it),
@@ -120,9 +108,23 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
                     contentScale = ContentScale.Crop
                 )
             }
+        }
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(125.dp))
+            TextField(value = firstName, onValueChange = { firstName = it }, label = { Text("Nombre") })
+            TextField(value = lastName, onValueChange = { lastName = it }, label = { Text("Apellido") })
+            TextField(value = petName, onValueChange = { petName = it }, label = { Text("Nombre de mascota") })
+            TextField(value = petAge, onValueChange = { petAge = it }, label = { Text("Edad de mascota") })
+            TextField(value = petBreed, onValueChange = { petBreed = it }, label = { Text("Raza de mascota") })
+            TextField(value = petGender, onValueChange = { petGender = it }, label = { Text("Sexo de mascota") })
 
             Spacer(modifier = Modifier.height(16.dp))
-
             Button(onClick = {
                 updateProfileData(
                     firstName = firstName,
@@ -144,32 +146,29 @@ fun UpdateProfileScreen(onNavigateBack: () -> Unit) {
                 Text("Guardar datos del perfil")
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.Center
             ) {
 
                 Button(onClick = { launcher.launch("image/*") }) {
                     Text("Seleccionar nueva foto")
                 }
-
-
-                Button(onClick = {
-                    saveProfileImage(
-                        profilePicUri = imageUri,
-                        onSuccess = {
-                            Toast.makeText(context, "Imagen actualizada correctamente", Toast.LENGTH_SHORT).show()
-                            onNavigateBack()
-                        },
-                        onError = { errorMessage ->
-                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                },) {
-                    Text("Guardar imagen")
-                }
+            }
+            Button(onClick = {
+                saveProfileImage(
+                    profilePicUri = imageUri,
+                    onSuccess = {
+                        Toast.makeText(context, "Imagen actualizada correctamente", Toast.LENGTH_SHORT).show()
+                        onNavigateBack()
+                    },
+                    onError = { errorMessage ->
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                )
+            },) {
+                Text("Guardar imagen")
             }
         }
     }
