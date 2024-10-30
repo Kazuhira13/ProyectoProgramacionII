@@ -198,14 +198,6 @@ fun ServiciosParaMascotas(navController: NavController) {
                                 Button(onClick = { ratePublication(publication["id"] as String, false) }) {
                                     Text("No me gusta")
                                 }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Button(onClick = {
-                                    selectedPublicationId = publication["id"] as String
-                                    showCommentsDialog = true
-                                    loadReviewsForPublication(selectedPublicationId,reviews)
-                                },) {
-                                    Text("Reseña")
-                                }
                             }
                             if (showCommentsDialog) {
                                 AlertDialog(
@@ -255,6 +247,14 @@ fun ServiciosParaMascotas(navController: NavController) {
                                     Text("Borrar Publicación")
                                 }
                             }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(onClick = {
+                                selectedPublicationId = publication["id"] as String
+                                showCommentsDialog = true
+                                loadReviewsForPublication(selectedPublicationId,reviews)
+                            },) {
+                                Text("Reseña")
+                            }
                             //ver reseña
                             Button(
                                 onClick = {
@@ -267,6 +267,7 @@ fun ServiciosParaMascotas(navController: NavController) {
                             ) {
                                 Text("Ver reseña")
                             }
+
                             if (showReviewDialog) {
                                 AlertDialog(
                                     onDismissRequest = { showReviewDialog = false },
@@ -305,7 +306,7 @@ fun ServiciosParaMascotas(navController: NavController) {
                 onClick = { showDialog = true },
                 modifier = Modifier
                     .padding(bottom = 80.dp, end = 24.dp)
-                    .background(Color.White, shape = RoundedCornerShape(50))
+                    .background(Color.Gray, shape = RoundedCornerShape(50))
                     .align(Alignment.BottomEnd)
             ) {
                 Icon(painter = painterResource(id = R.drawable.servicios), contentDescription = null)
