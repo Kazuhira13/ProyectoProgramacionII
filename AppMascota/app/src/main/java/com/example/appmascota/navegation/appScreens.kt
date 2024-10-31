@@ -14,4 +14,5 @@ sealed class AppScreens(val route: String){
     object MenuInicial:AppScreens(route = "menuInicial")
     object SolicitudesScreen : AppScreens("solicitudes")
     object ServiciosParaMascotas : AppScreens("servicios")
+    object PetsLost : AppScreens("mascotas perdidas")
 }

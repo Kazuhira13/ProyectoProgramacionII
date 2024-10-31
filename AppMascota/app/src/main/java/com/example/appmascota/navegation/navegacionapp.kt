@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.appmascota.Pantallas.Auntetificacion.ForgotPasswordScreen
 import com.example.appmascota.Pantallas.HomeScreen
 import com.example.appmascota.Pantallas.LoginScreen
+import com.example.appmascota.Pantallas.MascotasPerdidas.PetsLost
 import com.example.appmascota.Pantallas.Perfiles.ProfileScreen
 import com.example.appmascota.Pantallas.RegisterScreen
 import com.example.appmascota.Pantallas.Servicios.ServiciosParaMascotas
@@ -128,6 +129,9 @@ fun AppNavigation() {
         }
         composable(AppScreens.SolicitudesScreen.route) {
             SolicitudesScreen(navController = navController)
+        }
+        composable(AppScreens.PetsLost.route){
+            PetsLost(navController = navController)
         }
 
         composable(AppScreens.ServiciosParaMascotas.route) {
