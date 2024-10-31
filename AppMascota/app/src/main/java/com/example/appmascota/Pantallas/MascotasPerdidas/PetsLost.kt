@@ -75,4 +75,28 @@ fun PetsLost(navController: NavController){
                 Pets_lost.addAll(newPetsLost)
             }
     }
+
+}
+@Composable
+fun SelectImageLost(onImageSelected: (Uri?) -> Unit) {
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> onImageSelected(uri) }
+    )
+
+    Button(onClick = { launcher.launch("image/*") }) {
+        Text("Seleccionar Imagen")
+    }
+}
+
+fun deleteLostPetsPost(postId : String){
+    val db = FirebaseFirestore.getInstance()
+    db.collection("publicationLost").document(postId)
+        .delete()
+        .addOnSuccessListener {
+            Log.d("Firestore","Publicación de mascota perdida eliminada")
+        }
+        .addOnFailureListener{e ->
+            Log.w("Firestore", "Error al eliminar la publicación de mascota perdida")
+        }
 }
