@@ -127,7 +127,7 @@ fun ServiciosParaMascotas(navController: NavController) {
                 )
                 NavigationBarItem(
                     selected = true,
-                    onClick = {},
+                    onClick = {navController.navigate(AppScreens.PetsLost.route)},
                     icon = {
                         Icon(
                             painter = painterResource(id = R.drawable.heart),

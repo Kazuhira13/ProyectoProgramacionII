@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -41,11 +42,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.appmascota.Pantallas.adopcionMascota.SelectImage
 import com.example.appmascota.Pantallas.adopcionMascota.saveAdoptionPostToFirestore
+import com.example.appmascota.R
 import com.example.appmascota.navegation.AppScreens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -79,31 +82,66 @@ LaunchedEffect(Unit) {
 }
 
 Scaffold(
-bottomBar = {
-    NavigationBar {
-        // Botón "Solicitudes"
-        NavigationBarItem(
-            selected = false,
-            onClick = { navController.navigate("solicitudes") },
-            label = { Text("Solicitudes") },
-            icon = {} // No se muestra ningún ícono
-        )
+    bottomBar = {
+        NavigationBar {
+            NavigationBarItem(
+                selected = false,
+                onClick = {navController.navigate(AppScreens.MenuInicial.route)},
+                icon = {
 
-        // Botón "Mis Solicitudes"
-        NavigationBarItem(
-            selected = false,
-            onClick = { /* Acción para ver mis solicitudes */ },
-            label = { Text("Mis Solicitudes") },
-            icon = {} // No se muestra ningún ícono
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {navController.navigate(AppScreens.HomeScreen.route)},
-            label = { Text("Regresar a Home") },
-            icon = {}
-        )
+                    Icon(
+                        //inicio
+                        painter = painterResource(id = R.drawable.huella),
+                        contentDescription = null
+                    )
+                }
+            )
+            NavigationBarItem(
+                selected = true,
+                onClick = { navController.navigate(AppScreens.UserProfileScreen.route) },
+                icon = {
+                    Icon(
+                        //perfil
+                        painter = painterResource(id = R.drawable.ic_stat_name),
+                        contentDescription = null
+                    )
+                }
+            )
+            NavigationBarItem(
+                selected = true,
+                onClick = {navController.navigate(AppScreens.MenuInicial.route)},
+                icon = {
+                    Icon(
+                        //adopcion
+                        painter = painterResource(id = R.drawable.adopcion),
+                        contentDescription = null
+                    )
+                }
+            )
+            NavigationBarItem(
+                selected = true,
+                onClick = {navController.navigate(AppScreens.ServiciosParaMascotas.route)},
+                icon = {
+                    Icon(
+                        //servicios
+                        painter = painterResource(id = R.drawable.servicios),
+                        contentDescription = null
+                    )
+                }
+            )
+            NavigationBarItem(
+                selected = true,
+                onClick = {navController.navigate(AppScreens.PetsLost.route)},
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.heart),
+                        contentDescription = null
+                    )
+                }
+            )
+
+        }
     }
-}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
