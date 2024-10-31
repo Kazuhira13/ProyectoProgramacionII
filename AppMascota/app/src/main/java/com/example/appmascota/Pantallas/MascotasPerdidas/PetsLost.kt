@@ -100,3 +100,47 @@ fun deleteLostPetsPost(postId : String){
             Log.w("Firestore", "Error al eliminar la publicación de mascota perdida")
         }
 }
+fun sendLostPetsRequest(postId: String) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId != null) {
+        val request = hashMapOf(
+            "postId" to postId,
+            "userId" to userId,
+            "timestamp" to FieldValue.serverTimestamp()
+        )
+
+        FirebaseFirestore.getInstance().collection("lostPetsRequests")
+            .add(request)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Solicitud de mascota perdida enviada con éxito")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error al enviar la solicitud de mascota perdida" , e)
+            }
+    }
+}
+
+fun saveLostPetsPostToFirestore(petName: String, fechaDesaparicion: String, description: String, imageUri: Uri?) {
+    val db = FirebaseFirestore.getInstance()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+    if (userId != null) {
+        val post = hashMapOf(
+            "petName" to petName,
+            "fechaDesaparicion" to fechaDesaparicion,
+            "description" to description,
+            "userId" to userId,
+            "timestamp" to FieldValue.serverTimestamp(),
+            "imageUri" to imageUri.toString() // Guarda la URI de la imagen
+        )
+
+        db.collection("publicationsLost")
+            .add(post)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Publicación de mascota perdida guardada con éxito")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error al guardar la publicación de mascota perdida", e)
+            }
+    }
+}
