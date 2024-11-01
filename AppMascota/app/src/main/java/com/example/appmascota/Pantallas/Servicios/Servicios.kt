@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,10 +32,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,6 +65,7 @@ fun ServiciosParaMascotas(navController: NavController) {
     val reviews = remember { mutableStateListOf<Map<String, Any>>() }
     var showReviewDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    var price by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         FirebaseFirestore.getInstance().collection("Servicios")
@@ -151,7 +155,7 @@ fun ServiciosParaMascotas(navController: NavController) {
                 contentScale = ContentScale.Crop
             )
             Text(
-                text = "Area de Publicacion de Servicios",
+                text = "Publicacion de Servicios",
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 30.sp),
                 modifier = Modifier
                     .padding(16.dp)
@@ -166,16 +170,26 @@ fun ServiciosParaMascotas(navController: NavController) {
                 items(publications) { publication ->
                     Box(
                         modifier = Modifier
+                            .size(500.dp, 350.dp)
+                            .border(3.dp, Color.Unspecified, shape = RoundedCornerShape(8.dp)) // Borde externo
+                            .shadow(10.dp, shape = RoundedCornerShape(8.dp)) // Sombra
+                    ){
+                    Box(
+                        modifier = Modifier
                             .fillMaxWidth()
+                            .height(350.dp)
                             .background(Color.White, shape = RoundedCornerShape(8.dp))
-                            .padding(16.dp)
-                            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
                             .padding(16.dp)
                     ) {
                         Column {
                             Text(
                                 text = "${publication["title"] as String}",
                                 style = MaterialTheme.typography.titleLarge
+                            )
+                            Text(
+                                text = "Precio: Q.${publication["price"]}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Black
                             )
                             Text(
                                 text = "Publicado por: ${publication["firstName"]} ${publication["lastName"]}",
@@ -198,6 +212,15 @@ fun ServiciosParaMascotas(navController: NavController) {
                                 Button(onClick = { ratePublication(publication["id"] as String, false) }) {
                                     Text("No me gusta")
                                 }
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Button(onClick = {
+                                    selectedPublicationId = publication["id"] as String
+                                    showCommentsDialog = true
+                                    loadReviewsForPublication(selectedPublicationId,reviews)
+                                },) {
+                                    Text("Reseña")
+                                }
+
                             }
                             if (showCommentsDialog) {
                                 AlertDialog(
@@ -248,13 +271,6 @@ fun ServiciosParaMascotas(navController: NavController) {
                                 }
                             }
                             Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = {
-                                selectedPublicationId = publication["id"] as String
-                                showCommentsDialog = true
-                                loadReviewsForPublication(selectedPublicationId,reviews)
-                            },) {
-                                Text("Reseña")
-                            }
                             //ver reseña
                             Button(
                                 onClick = {
@@ -263,7 +279,7 @@ fun ServiciosParaMascotas(navController: NavController) {
                                     loadReviewsForPublication(selectedPublicationId,reviews)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                                modifier = Modifier.padding(top = 20.dp)
+                                modifier = Modifier.padding(top = 10.dp)
                             ) {
                                 Text("Ver reseña")
                             }
@@ -296,7 +312,7 @@ fun ServiciosParaMascotas(navController: NavController) {
                                 )
                             }
                         }
-                    }
+                    }}
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -323,12 +339,20 @@ fun ServiciosParaMascotas(navController: NavController) {
                                 label = { Text("Título") }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
+                            TextField(
+                                value = price,
+                                onValueChange = { price = it },
+                                label = { Text("Precio") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     },
                     confirmButton = {
                         Button(onClick = {
                             if (title.isNotBlank()) {
-                                savePublication(title, content)
+                                savePublication(title, content, price)
+                                price = ""
                                 title = ""
                                 showDialog = false
                             }else{
@@ -380,7 +404,7 @@ fun getUserData(userId: String, callback: (String, String) -> Unit) {
 }
 
 
-fun savePublication(title: String, content: String) {
+fun savePublication(title: String, content: String, price: String) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     if (userId != null) {
@@ -392,6 +416,7 @@ fun savePublication(title: String, content: String) {
                 "lastName" to lastName,
                 "title" to title,
                 "content" to content,
+                "price" to price,
                 "timestamp" to FieldValue.serverTimestamp(),
                 "likesCount" to 0,
                 "dislikesCount" to 0,
