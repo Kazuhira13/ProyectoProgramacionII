@@ -147,8 +147,7 @@ fun MenuInicial(navController: NavController) {
                                     // Este botón aparece solo para los usuarios que no son el creador de la publicación
                                     Button(
                                         onClick = {
-                                            // Aquí llamas a la función para mandar la solicitud de adopción
-                                            sendAdoptionRequest(post["id"] as String)
+                                            sendAdoptionRequest(post["id"] as String, post["petName"] as String, post["userId"] as String)
                                         },
                                         modifier = Modifier.padding(top = 8.dp)
                                     ) {
@@ -271,11 +270,13 @@ fun deleteAdoptionPost(postId: String) {
         }
 }
 
-fun sendAdoptionRequest(postId: String) {
+fun sendAdoptionRequest(postId: String, postName: String, postUserId: String) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid
     if (userId != null) {
         val request = hashMapOf(
             "postId" to postId,
+            "postName" to postName, // Añadido
+            "postUserId" to postUserId, // Añadido
             "userId" to userId,
             "timestamp" to FieldValue.serverTimestamp()
         )
@@ -290,6 +291,7 @@ fun sendAdoptionRequest(postId: String) {
             }
     }
 }
+
 
 fun saveAdoptionPostToFirestore(petName: String, medicalHistory: String, description: String, imageUri: Uri?) {
     val db = FirebaseFirestore.getInstance()

@@ -42,6 +42,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import android.widget.Toast
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.ui.platform.LocalContext
 
 
@@ -171,20 +173,21 @@ fun UserProfileScreen(onNavigateToUpdate: () -> Unit,navController: NavControlle
                         modifier = Modifier.padding(bottom = 15.dp))
 
                     Spacer(modifier = Modifier.height(16.dp))
+                    Row(modifier = Modifier.padding(top = 8.dp)){
+                        Button(onClick = {
+                            onNavigateToUpdate()
+                        }) {
+                            Text("Actualizar datos")
+                        }
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Button(onClick = {
+                            Toast.makeText(context, "Se salió de la cuenta", Toast.LENGTH_SHORT).show()
+                            navController.navigate(AppScreens.LoginScreen.route)
+                        }) {
+                            Text("Salir")
+                        }
 
-                    Button(onClick = {
-                        onNavigateToUpdate()
-                    }) {
-                        Text("Actualizar datos")
                     }
-                    Button(onClick = {
-                        Toast.makeText(context, "Se salió de la cuenta", Toast.LENGTH_SHORT).show()
-                        navController.navigate(AppScreens.LoginScreen.route)
-                    }) {
-                        Text("Salir")
-                    }
-
-
                 }
             }
         }else{

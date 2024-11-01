@@ -277,7 +277,7 @@ fun ServiciosParaMascotas(navController: NavController) {
                                     loadReviewsForPublication(selectedPublicationId,reviews)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                                modifier = Modifier.padding(top = 20.dp)
+                                modifier = Modifier.padding(top = 10.dp)
                             ) {
                                 Text("Ver reseña")
                             }
