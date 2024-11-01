@@ -35,6 +35,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import coil.compose.rememberImagePainter
 import com.example.appmascota.navegation.AppScreens
+import java.util.UUID
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -294,23 +295,39 @@ fun saveAdoptionPostToFirestore(petName: String, medicalHistory: String, descrip
     val db = FirebaseFirestore.getInstance()
     val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-    if (userId != null) {
-        val post = hashMapOf(
-            "petName" to petName,
-            "medicalHistory" to medicalHistory,
-            "description" to description,
-            "userId" to userId,
-            "timestamp" to FieldValue.serverTimestamp(),
-            "imageUri" to imageUri.toString() // Guarda la URI de la imagen
-        )
+    if (userId != null && imageUri != null) {
+        saveImageToFirebaseStorage(imageUri, onSuccess = { imageUrl ->
+            val post = hashMapOf(
+                "petName" to petName,
+                "medicalHistory" to medicalHistory,
+                "description" to description,
+                "userId" to userId,
+                "timestamp" to FieldValue.serverTimestamp(),
+                "imageUri" to imageUrl // Guardamos la URL HTTPS de la imagen
+            )
 
-        db.collection("publicationsAdopcion")
-            .add(post)
-            .addOnSuccessListener {
-                Log.d("Firestore", "Publicación de adopción guardada con éxito")
-            }
-            .addOnFailureListener { e ->
-                Log.w("Firestore", "Error al guardar la publicación de adopción", e)
-            }
+            db.collection("publicationsAdopcion")
+                .add(post)
+                .addOnSuccessListener {
+                    Log.d("Firestore", "Publicación de adopción guardada con éxito")
+                }
+                .addOnFailureListener { e ->
+                    Log.w("Firestore", "Error al guardar la publicación de adopción", e)
+                }
+        }, onFailure = { e ->
+            Log.w("Storage", "Error al subir la imagen", e)
+        })
     }
+}
+fun saveImageToFirebaseStorage(imageUri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
+    val storageRef = FirebaseStorage.getInstance().reference.child("images/${UUID.randomUUID()}")
+    storageRef.putFile(imageUri)
+        .addOnSuccessListener {
+            storageRef.downloadUrl.addOnSuccessListener { uri ->
+                onSuccess(uri.toString()) // Esto devuelve la URL HTTPS de Firebase
+            }
+        }
+        .addOnFailureListener { exception ->
+            onFailure(exception)
+        }
 }
