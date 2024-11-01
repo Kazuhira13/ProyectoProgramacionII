@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,17 +41,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
+import com.example.appmascota.Pantallas.adopcionMascota.saveImageToFirebaseStorage
 import com.example.appmascota.R
 import com.example.appmascota.navegation.AppScreens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
+import java.util.UUID
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -69,7 +75,7 @@ fun PetsLost(navController: NavController) {
                 if (e != null || snapshot == null) return@addSnapshotListener
                 val newPetsLostPosts = snapshot.documents.mapNotNull { doc ->
                     val data = doc.data?.toMutableMap()
-                    data?.put("id", doc.id) // Guardar el ID del documento
+                    data?.put("id", doc.id)
                     data
                 }
                 PetsLostPosts.clear()
@@ -139,86 +145,82 @@ fun PetsLost(navController: NavController) {
         }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 50.dp)
-            ) {
-                items(PetsLostPosts) { post ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.White, shape = RoundedCornerShape(8.dp))
-                            .padding(16.dp)
-                            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 50.dp)
+        ) {
+            items(PetsLostPosts) { post ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                        .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically // Centra verticalmente la imagen y el texto
-                        ) {
-                            Image(
-                                painter = rememberImagePainter(post["imageUri"] as String),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .padding(end = 16.dp) // Espacio entre la imagen y el texto
+                        Image(
+                            painter = rememberImagePainter(post["imageUri"] as String),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .padding(end = 16.dp)
+                        )
+
+
+                        Column {
+                            Text(
+                                text = "Nombre: ${post["petName"] as String}",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            Text(
+                                text = "fecha de desaparicion: ${post["fechaDesapariciony"] as String}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "Descripción: ${post["description"] as String}",
+                                style = MaterialTheme.typography.bodyMedium
                             )
 
-                            // Columna que contiene la información de la mascota
-                            Column {
-                                Text(
-                                    text = "Nombre: ${post["petName"] as String}",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-                                Text(
-                                    text = "fecha de desaparicion: ${post["fechaDesapariciony"] as String}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                Text(
-                                    text = "Descripción: ${post["description"] as String}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
 
-                                // Solo muestra el botón de eliminar si el usuario es el creador de la publicación
-                                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                                if (currentUserId == post["userId"]) {
-                                    Button(
-                                        onClick = {
-                                            // Aquí llamamos a la función para eliminar la publicación
-                                            deleteLostPost(post["id"] as String)
-                                        },
-                                        modifier = Modifier.padding(top = 8.dp)
-                                    ) {
-                                        Text("Eliminar")
-                                    }
-                                } else {
-                                    // Este botón aparece solo para los usuarios que no son el creador de la publicación
-                                    Button(
-                                        onClick = {
-                                            // Aquí llamas a la función para mandar la solicitud de adopción
-                                            sendLostRequest(post["id"] as String)
-                                        },
-                                        modifier = Modifier.padding(top = 8.dp)
-                                    ) {
-                                        Text("Mandar Solicitud")
-                                    }
+                            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                            if (currentUserId == post["userId"]) {
+                                Button(
+                                    onClick = {
+                                        deleteLostPost(post["id"] as String)
+                                    },
+                                    modifier = Modifier.padding(top = 8.dp)
+                                ) {
+                                    Text("Eliminar")
+                                }
+                            } else {
+                                Button(
+                                    onClick = {
+                                        sendLostRequest(post["id"] as String)
+                                    },
+                                    modifier = Modifier.padding(top = 8.dp)
+                                ) {
+                                    Text("Mandar Solicitud")
                                 }
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
+        }
+
             Button(
                 onClick = { showDialog = true },
                 modifier = Modifier
                     .padding(bottom = 80.dp, end = 24.dp)
                     .align(Alignment.BottomEnd)
             ) {
-                Text(text = "Nueva Publicación")
+                Text(text = "Nueva mascota perdida")
             }
-
-            // Diálogo para crear una nueva publicación de adopción
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
@@ -243,14 +245,10 @@ fun PetsLost(navController: NavController) {
                                 label = { Text("Descripción") }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-
-                            // Selector de imagen
                             SelectImageL { uri ->
-                                imageUri = uri // Actualiza la URI de la imagen seleccionada
+                                imageUri = uri
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-
-                            // Previsualización de la imagen seleccionada
                             imageUri?.let {
                                 Image(
                                     painter = rememberImagePainter(it),
@@ -347,24 +345,37 @@ fun sendLostRequest(postId: String) {
         val db = FirebaseFirestore.getInstance()
         val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-        if (userId != null) {
-            val post = hashMapOf(
-                "petName" to petName,
-                "fechaDesapariciony" to fechaDesapariciony,
-                "description" to description,
-                "userId" to userId,
-                "timestamp" to FieldValue.serverTimestamp(),
-                "imageUri" to imageUri.toString() // Guarda la URI de la imagen
-            )
+        if (userId != null && imageUri !=null) {
+            saveImageLostPToFirebaseStorage(imageUri, onSuccess = { imageUrl ->
+                val post = hashMapOf(
+                    "petName" to petName,
+                    "fechaDesapariciony" to fechaDesapariciony,
+                    "description" to description,
+                    "userId" to userId,
+                    "timestamp" to FieldValue.serverTimestamp(),
+                    "imageUri" to imageUri.toString()
+                )
 
-            db.collection("PublicationLost")
-                .add(post)
-                .addOnSuccessListener {
-                    Log.d("Firestore", "Publicación de adopción guardada con éxito")
-                }
-                .addOnFailureListener { e ->
-                    Log.w("Firestore", "Error al guardar la publicación de adopción", e)
-                }
+                db.collection("PublicationLost")
+                    .add(post)
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Publicación de mascota perdida guardada con éxito")
+                    }
+            }, onFailure = { e ->
+                Log.w("Storage", "Error al subir la imagen", e)
+            })
         }
     }
+fun saveImageLostPToFirebaseStorage(imageUri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
+    val storageRef = FirebaseStorage.getInstance().reference.child("images/${UUID.randomUUID()}")
+    storageRef.putFile(imageUri)
+        .addOnSuccessListener {
+            storageRef.downloadUrl.addOnSuccessListener { uri ->
+                onSuccess(uri.toString())
+            }
+        }
+        .addOnFailureListener { exception ->
+            onFailure(exception)
+        }
+}
 
