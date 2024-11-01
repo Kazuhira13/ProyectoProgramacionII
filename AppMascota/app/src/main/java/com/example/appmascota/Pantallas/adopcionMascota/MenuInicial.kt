@@ -24,8 +24,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
@@ -34,6 +37,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import coil.compose.rememberImagePainter
+import com.example.appmascota.R
 import com.example.appmascota.navegation.AppScreens
 import java.util.UUID
 
@@ -91,6 +95,13 @@ fun MenuInicial(navController: NavController) {
         }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(id = R.drawable.mascota),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -99,10 +110,16 @@ fun MenuInicial(navController: NavController) {
                 items(adoptionPosts) { post ->
                     Box(
                         modifier = Modifier
+                            .size(500.dp, 200.dp)
+                            .border(3.dp, Color.Unspecified, shape = RoundedCornerShape(8.dp)) // Borde externo
+                            .shadow(10.dp, shape = RoundedCornerShape(8.dp)) // Sombra
+                    ){
+                    Box(
+                        modifier = Modifier
                             .fillMaxWidth()
+                            .height(200.dp)
                             .background(Color.White, shape = RoundedCornerShape(8.dp))
                             .padding(16.dp)
-                            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -156,7 +173,7 @@ fun MenuInicial(navController: NavController) {
                                 }
                             }
                         }
-                    }
+                    }}
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
