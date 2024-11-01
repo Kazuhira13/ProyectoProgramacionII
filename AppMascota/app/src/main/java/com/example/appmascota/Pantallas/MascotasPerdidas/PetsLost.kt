@@ -145,6 +145,21 @@ fun PetsLost(navController: NavController) {
         }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+                Image(
+                    painter = painterResource(id = R.drawable.mascota),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                Text(
+                    text = "Mascotas Perdidas",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 30.sp),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.TopStart)
+                )
+            
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
