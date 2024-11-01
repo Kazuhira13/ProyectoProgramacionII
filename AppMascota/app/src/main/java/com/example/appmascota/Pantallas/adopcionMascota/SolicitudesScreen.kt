@@ -1,5 +1,6 @@
 package com.example.appmascota.Pantallas.adopcionMascota
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.layout.*
@@ -27,18 +28,27 @@ fun SolicitudesScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         userId?.let {
             FirebaseFirestore.getInstance().collection("adoptionRequests")
-                .whereEqualTo("creatorId", it) // Filtrar por el ID del creador
+                .whereEqualTo("userId", it) // Filtrar por el ID del creador
                 .addSnapshotListener { snapshot, e ->
-                    if (e != null || snapshot == null) return@addSnapshotListener
-                    val newRequests = snapshot.documents.mapNotNull { doc ->
-                        val data = doc.data?.toMutableMap()
-                        data?.put("id", doc.id) // Guardar el ID del documento
-                        data
+                    if (e != null) {
+                        Log.w("FirestoreError", "Error fetching documents: ", e)
+                        return@addSnapshotListener
                     }
-                    adoptionRequests.clear()
-                    adoptionRequests.addAll(newRequests)
+
+                    if (snapshot != null) {
+                        Log.d("FirestoreData", "Snapshot size: ${snapshot.size()}") // Verificar si hay documentos
+
+                        val newRequests = snapshot.documents.mapNotNull { doc ->
+                            val data = doc.data?.toMutableMap()
+                            data?.put("id", doc.id) // Guardar el ID del documento
+                            data
+                        }
+
+                        adoptionRequests.clear()
+                        adoptionRequests.addAll(newRequests)
+                    }
                 }
-        }
+        }?: Log.d("UserIdCheck", "User ID is null")
     }
 
     Scaffold(
@@ -82,10 +92,27 @@ fun RequestItem(request: Map<String, Any>) {
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Solicitud ID: ${request["id"]}")
-            Text("Publicación ID: ${request["postId"]}")
-            Text("Usuario ID: ${request["userId"]}")
-            // Aquí puedes agregar más detalles de la solicitud si es necesario
+            Text("Nombre de Publicación: ${request["postName"]}") // Mostrar nombre de la publicación
+            Button(
+                onClick = {
+                    deleteAdoptionRequest(request["id"] as String)
+                },
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text("Borrar Solicitud")
+            }
         }
     }
+}
+
+fun deleteAdoptionRequest(requestId: String) {
+    val db = FirebaseFirestore.getInstance()
+    db.collection("adoptionRequests").document(requestId)
+        .delete()
+        .addOnSuccessListener {
+            Log.d("Firestore", "Solicitud de adopción eliminada con éxito")
+        }
+        .addOnFailureListener { e ->
+            Log.w("Firestore", "Error al eliminar la solicitud de adopción", e)
+        }
 }
