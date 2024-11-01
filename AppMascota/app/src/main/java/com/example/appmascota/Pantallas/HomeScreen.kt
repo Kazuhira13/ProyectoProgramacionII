@@ -47,7 +47,9 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 
@@ -163,15 +165,20 @@ fun HomeScreen(navController: NavController) {
                 items(publications) { publication ->
                     Box(
                         modifier = Modifier
+                            .size(500.dp, 280.dp)
+                            .border(3.dp, Color.Unspecified, shape = RoundedCornerShape(8.dp)) // Borde externo
+                            .shadow(10.dp, shape = RoundedCornerShape(8.dp)) // Sombra
+                    ){
+                    Box(
+                        modifier = Modifier
                             .fillMaxWidth()
+                            .height(280.dp)
                             .background(Color.White, shape = RoundedCornerShape(8.dp))
-                            .padding(16.dp)
-                            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
                             .padding(16.dp)
                     ) {
                         Column {
                             Text(
-                                text = "Título: ${publication["title"] as String}",
+                                text = " ${publication["title"] as String}",
                                 style = MaterialTheme.typography.titleLarge
                             )
                             Text(
@@ -197,6 +204,8 @@ fun HomeScreen(navController: NavController) {
                                 }
                             }
                         }
+                    }
+
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
