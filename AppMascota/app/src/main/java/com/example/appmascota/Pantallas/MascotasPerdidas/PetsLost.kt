@@ -3,6 +3,7 @@ package com.example.appmascota.Pantallas.MascotasPerdidas
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -11,13 +12,16 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +29,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -201,7 +206,94 @@ fun PetsLost(navController: NavController) {
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
+            }
+            Button(
+                onClick = { showDialog = true },
+                modifier = Modifier
+                    .padding(bottom = 80.dp, end = 24.dp)
+                    .align(Alignment.BottomEnd)
+            ) {
+                Text(text = "Nueva Publicación")
+            }
+
+            // Diálogo para crear una nueva publicación de adopción
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Reportar Mascota Perdida") },
+                    text = {
+                        Column {
+                            TextField(
+                                value = petName,
+                                onValueChange = { petName = it },
+                                label = { Text("Nombre de la Mascota") }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextField(
+                                value = fechaDesapariciony,
+                                onValueChange = { fechaDesapariciony = it },
+                                label = { Text("Fecha de Desaparición") }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextField(
+                                value = description,
+                                onValueChange = { description = it },
+                                label = { Text("Descripción") }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Selector de imagen
+                            SelectImageL { uri ->
+                                imageUri = uri // Actualiza la URI de la imagen seleccionada
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Previsualización de la imagen seleccionada
+                            imageUri?.let {
+                                Image(
+                                    painter = rememberImagePainter(it),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .padding(top = 8.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            if (petName.isNotBlank() && fechaDesapariciony.isNotBlank() && description.isNotBlank() && imageUri != null) {
+                                saveLostPostFirestore(
+                                    petName,
+                                    fechaDesapariciony,
+                                    description,
+                                    imageUri
+                                )
+                                petName = ""
+                                fechaDesapariciony = ""
+                                description = ""
+                                imageUri = null
+                                showDialog = false
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Por favor, rellena todos los campos.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }) {
+                            Text("Publicar")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showDialog = false }) {
+                            Text("Cancelar")
+                        }
+                    }
+                )
             }
         }
     }
@@ -251,4 +343,28 @@ fun sendLostRequest(postId: String) {
             }
     }
 }
+    fun saveLostPostFirestore(petName: String, fechaDesapariciony: String, description: String, imageUri: Uri?) {
+        val db = FirebaseFirestore.getInstance()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (userId != null) {
+            val post = hashMapOf(
+                "petName" to petName,
+                "fechaDesapariciony" to fechaDesapariciony,
+                "description" to description,
+                "userId" to userId,
+                "timestamp" to FieldValue.serverTimestamp(),
+                "imageUri" to imageUri.toString() // Guarda la URI de la imagen
+            )
+
+            db.collection("PublicationLost")
+                .add(post)
+                .addOnSuccessListener {
+                    Log.d("Firestore", "Publicación de adopción guardada con éxito")
+                }
+                .addOnFailureListener { e ->
+                    Log.w("Firestore", "Error al guardar la publicación de adopción", e)
+                }
+        }
+    }
 
