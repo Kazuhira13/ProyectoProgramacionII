@@ -187,7 +187,7 @@ fun ServiciosParaMascotas(navController: NavController) {
                                 style = MaterialTheme.typography.titleLarge
                             )
                             Text(
-                                text = "Precio: Q${publication["price"]}",
+                                text = "Precio: Q.${publication["price"]}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.Black
                             )
@@ -212,6 +212,15 @@ fun ServiciosParaMascotas(navController: NavController) {
                                 Button(onClick = { ratePublication(publication["id"] as String, false) }) {
                                     Text("No me gusta")
                                 }
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Button(onClick = {
+                                    selectedPublicationId = publication["id"] as String
+                                    showCommentsDialog = true
+                                    loadReviewsForPublication(selectedPublicationId,reviews)
+                                },) {
+                                    Text("Reseña")
+                                }
+
                             }
                             if (showCommentsDialog) {
                                 AlertDialog(
@@ -262,13 +271,6 @@ fun ServiciosParaMascotas(navController: NavController) {
                                 }
                             }
                             Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = {
-                                selectedPublicationId = publication["id"] as String
-                                showCommentsDialog = true
-                                loadReviewsForPublication(selectedPublicationId,reviews)
-                            },) {
-                                Text("Reseña")
-                            }
                             //ver reseña
                             Button(
                                 onClick = {
