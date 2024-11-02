@@ -175,7 +175,7 @@ fun PetsLost(navController: NavController) {
                     Box(
                         modifier = Modifier
                             .size(500.dp, 260.dp)
-                            .border(3.dp, Color.Unspecified, shape = RoundedCornerShape(8.dp)) // Borde externo
+                            .border(3.dp, Color.Unspecified, shape = RoundedCornerShape(8.dp)) // Borde externo raros
                             .shadow(10.dp, shape = RoundedCornerShape(8.dp)) // Sombra
                     ){
                     Box(
