@@ -82,7 +82,7 @@ fun HomeScreen(navController: NavController) {
             NavigationBar {
                 NavigationBarItem(
                     selected = false,
-                    onClick = {/* Acción al hacer clic */},
+                    onClick = {/* Acción al hacer clicc */},
                     icon = {
                         Icon(
                             //inicio
