@@ -41,7 +41,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -174,16 +173,10 @@ fun PetsLost(navController: NavController) {
                 items(PetsLostPosts) { post ->
                     Box(
                         modifier = Modifier
-                            .size(500.dp, 260.dp)
-                            .border(3.dp, Color.Unspecified, shape = RoundedCornerShape(8.dp)) // Borde externo
-                            .shadow(10.dp, shape = RoundedCornerShape(8.dp)) // Sombra
-                    ){
-                    Box(
-                        modifier = Modifier
                             .fillMaxWidth()
-                            .height(260.dp)
                             .background(Color.White, shape = RoundedCornerShape(8.dp))
                             .padding(16.dp)
+                            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -236,7 +229,6 @@ fun PetsLost(navController: NavController) {
                                 }
                             }
                         }
-                    }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
